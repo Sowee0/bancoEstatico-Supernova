@@ -1,0 +1,1 @@
+# bancoEstatico-Supernova
