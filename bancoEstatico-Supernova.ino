@@ -22,11 +22,13 @@
 
 //definições de erros
 #define ERRO_SD 's'
+#define ERRO_BANCO 'b'
 
 //definição de estados
 #define ESTADO_GRAVANDO 'g'
 #define ESTADO_FINALIZADO 'f'
 #define ESTADO_ESPERA 'e'
+#define ESTADO_TESTEBANCO 't'
 
 //variaveis do SD
 File file;
@@ -37,6 +39,7 @@ char nomeConcat[12];
 HX711 scale(HX_DOUT, HX_CLK);
 float calibration_factor = 2.00;
 float dado;
+float medidaInicial = 0;
 
 //variaveis da chave do código (c/ debounce)
 Bounce debouncer = Bounce();
@@ -99,6 +102,24 @@ void inicializa() {
       file = SD.open(nomeConcat, FILE_WRITE);
     }
 
+  scale.set_scale();
+  scale.tare();
+
+  if(medidaInicial == 0){
+  scale.set_scale(calibration_factor);
+  medidaInicial = scale.get_units(), 10;
+  }
+
+  float medidaAtual = scale.get_units(), 10;
+
+  while(medidaInicial == medidaAtual){
+  notifica(ERRO_BANCO)
+  delay(500);
+  }
+
+  
+
+  ]
   if (!erro)
   {
    // statusAtual = ESTADO_ESPERA;
@@ -110,8 +131,7 @@ void inicializa() {
     atualizaMillis = millis();
   }
 
-  scale.set_scale();
-  scale.tare();
+  
 
 }
 
@@ -256,25 +276,34 @@ void notifica (char codigo) {
 
     case ERRO_SD:
 
-      digitalWrite(RLED, HIGH);
+      digitalWrite(RLED, !digitalRead(RLED));
       digitalWrite(YLED, LOW);
       digitalWrite(GLED, LOW);
 
       break;
+      
+    case ERRO_BANCO:
 
+      digitalWrite(RLED, LOW);
+      digitalWrite(YLED, !digitalRead(YLED));
+      digitalWrite(GLED, LOW);
+
+      break;
+      
     case ESTADO_GRAVANDO:
 
       digitalWrite(RLED, LOW);
       digitalWrite(YLED, LOW);
-      digitalWrite(GLED, HIGH);
+      digitalWrite(GLED, !digitalRead(GLED));
 
       break;
 
     case ESTADO_ESPERA:
 
-      digitalWrite(RLED, LOW);
-      digitalWrite(YLED, HIGH);
-      digitalWrite(GLED, LOW);
+      
+      digitalWrite(RLED, !digitalRead(RLED));
+      digitalWrite(YLED, !digitalRead(YLED));
+      digitalWrite(GLED, !digitalRead(GLED));
 
       break;
 
